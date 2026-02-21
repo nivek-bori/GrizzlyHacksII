@@ -36,17 +36,23 @@ export default function HomeComponent() {
         canvas.width = img.width;
         canvas.height = img.height;
         const ctx = canvas.getContext('2d');
-        if (ctx) ctx.drawImage(img, 0, 0);
+        if (!ctx) return;
+        
+        ctx.drawImage(img, 0, 0);
+        
         for (const text of testingData) {
+          // Whiteout Background
           ctx.fillStyle = "white";
           ctx.fillRect(text.bounding_box.x1, text.bounding_box.y1, text.bounding_box.x1-text.bounding_box.x0, text.bounding_box.y1-text.bounding_box.y0);
 
+          // Maximizing File
           let fontSize = 12;
           ctx.font = `${fontSize}px OpenDyslexic`;
           const metrics = ctx.measureText(text.text);
           const ratio = Math.min((text.bounding_box.x1 - text.bounding_box.x0) / metrics.width, (text.bounding_box.y1 - text.bounding_box.y0) / fontSize);
           fontSize = Math.floor(ratio * fontSize);
 
+          // Writing Text
           ctx.fillStyle = "black";
           ctx.font = `${fontSize}px OpenDyslexic`;
           ctx.fillText(text.text, text.bounding_box.x0 + (text.bounding_box.x1 - text.bounding_box.x0) / 2 - ctx.measureText(text.text).width / 2, text.bounding_box.y0 + (text.bounding_box.y1 - text.bounding_box.y0) / 2 - fontSize / 2);
