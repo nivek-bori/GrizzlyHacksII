@@ -1,5 +1,7 @@
 'use client';
 
+import { OCRPostReturn } from "@/app/api/ocr/route";
+import { request } from "@/lib/api";
 import { useRef } from "react";
 
 // type OCRPostReturn = {
@@ -62,9 +64,37 @@ export default function HomeComponent() {
 
     }
 
-    
+    const handleUpload = async (e: React.FormEvent<HTMLFormElement>) => {
+      e.preventDefault();
 
+      // Loading file
+      const form = e.target as HTMLFormElement;
+      const fileInput = form.elements.namedItem('image') as HTMLInputElement;
+      if (!fileInput.files || fileInput.files.length === 0) {
+        alert('Please select an image.');  // TODO: NOTIFICATION
+        return;
+      }
 
+      // Processing file
+      const binaryImage = fileInput.files[0];
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        const base64Image = reader.result as string;
+        try {
+          // OCR
+          const formData = new FormData();
+          formData.append('image', binaryImage);
+          const res = await request<OCRPostReturn>({ type: 'POST', route: '/api/ocr', body: formData });
+          console.log(`development:`, res.status, res.message, res.text_data);
+
+          // Draw Image
+          if (res.status === 'success' && res.text_data) drawImageData(base64Image); // drawImageData(base64Image, res.text_data);
+        } catch (e: any) {
+          alert('Upload failed'); // TODO: NOTIFICATION
+        }
+      };
+      reader.readAsDataURL(binaryImage);
+    }
   }
 
   // for each rectangle of text: 
