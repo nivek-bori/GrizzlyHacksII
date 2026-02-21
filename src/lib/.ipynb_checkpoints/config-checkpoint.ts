@@ -6,8 +6,8 @@ export const config = {
     route: process.env.NEXT_PUBLIC_DEFAULT_ROUTE || '',
     url_route: (process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000') + (process.env.NEXT_PUBLIC_DEFAULT_ROUTE || ''),
   },
-  ocr: {
-    confidence_threshold: process.env.NEXT_PUBLIC_TESSERACT_CONFIDENCE_THRESHOLD || 0.3,
-    tesseract_version: process.env.NEXT_PUBLIC_TESSERACT_VERSION || '4.0.0',
-  }
+};
+
+export const ocr_config = {
+  confidence_threshold: 0.3,
 };

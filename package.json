@@ -12,6 +12,7 @@
     "@tesseract.js-data/eng": "^1.0.0",
     "axios": "^1.13.5",
     "next": "^16.1.6",
+    "docling-sdk": "^1.3.6",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "tesseract.js": "^7.0.0"
@@ -21,8 +22,8 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "@typescript-eslint/eslint-plugin": "^6.15.0",
-    "@typescript-eslint/parser": "^6.15.0",
+    "@typescript-eslint/eslint-plugin": "^8.56.0",
+    "@typescript-eslint/parser": "^8.56.0",
     "eslint": "^10.0.1",
     "eslint-config-next": "^0.2.4",
     "tailwindcss": "^4",
