@@ -1,6 +1,6 @@
-import { DefaultAPIRet, verifyBody } from "@/lib/api";
 import { ocr_config } from "@/lib/config";
 import { NextResponse } from "next/server";
+import path from "path";
 import { createWorker } from 'tesseract.js';
 
 export type OCRPostRequest = {
@@ -39,7 +39,12 @@ export async function POST(request: Request) {
     const imageBuffer = Buffer.from(arrayBuffer);
     
     // OCR
-    worker = await createWorker('eng', 1, {});
+    worker = await createWorker('eng', 1, {
+      workerPath: path.resolve(process.cwd(), 'node_modules/tesseract.js/src/worker-script/node/index.js'),
+      corePath: path.resolve(process.cwd(), 'node_modules/tesseract.js-core/tesseract-core.wasm.js'),
+      langPath: path.resolve(process.cwd(), 'node_modules/@tesseract.js-data/eng/4.0.0_best_int'),
+      workerBlobURL: false,
+    });
     const { data } = await worker.recognize(imageBuffer, {}, { blocks: true }); // You can also use: tsv: true (alternative flat format)
     
     // Formatting & Processing
