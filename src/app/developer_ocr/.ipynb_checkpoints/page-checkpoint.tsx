@@ -2,67 +2,44 @@
 
 import { request } from '@/lib/api';
 import { useRef } from 'react';
+import { OCRPostReturn } from '../api/ocr/route';
 
-type OCRPostReturn = {
-  status: 'success' | 'error';
-  message: string;
-  text_data?: Array<{
-    text: string;
-    bounding_box: {
-      x0: number;
-      y0: number;
-      x1: number;
-      y1: number;
-    };
-  }>;
-};
-
-export default function HomeComponent() {
+export default function DeveloperPage() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const drawImageData = (imageData: string, textData: NonNullable<OCRPostReturn['text_data']>) => {
+    if (!imageData || !canvasRef.current) return;
     const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
+    
     const img = new Image();
     img.onload = () => {
       canvas.width = img.width;
       canvas.height = img.height;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+
       ctx.drawImage(img, 0, 0);
 
+      ctx.save();
+      ctx.strokeStyle = 'red';
+      ctx.lineWidth = Math.max(2, img.width * 0.005);
+      ctx.beginPath();
+
       for (const text of textData) {
-        ctx.fillStyle = 'white';
-        ctx.fillRect(
-          text.bounding_box.x0,
-          text.bounding_box.y0,
-          text.bounding_box.x1 - text.bounding_box.x0,
-          text.bounding_box.y1 - text.bounding_box.y0
-        );
+        const { x0, y0, x1, y1 } = text.bounding_box;
+        const width = x1 - x0;
+        const height = y1 - y0;
 
-        let fontSize = 12;
-        ctx.font = `${fontSize}px OpenDyslexic`;
-        const metrics = ctx.measureText(text.text);
-        const ratio = Math.min(
-          (text.bounding_box.x1 - text.bounding_box.x0) / metrics.width,
-          (text.bounding_box.y1 - text.bounding_box.y0) / fontSize
-        );
-        fontSize = Math.floor(ratio * fontSize);
-
-        ctx.fillStyle = 'black';
-        ctx.font = `${fontSize}px OpenDyslexic`;
-        ctx.fillText(
-          text.text,
-          text.bounding_box.x0 + (text.bounding_box.x1 - text.bounding_box.x0) / 2 - ctx.measureText(text.text).width / 2,
-          text.bounding_box.y0 + (text.bounding_box.y1 - text.bounding_box.y0) / 2 - fontSize / 2
-        );
+        ctx.rect(x0, y0, width, height);
       }
+
+      ctx.stroke();
+      ctx.restore();
     };
     img.src = imageData;
-  };
+  }
 
-  const handleUpload = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleUpload = async (e: React.FormEvent<HTMLFormElement>) => { 
     e.preventDefault();
 
     // Loading file
@@ -84,16 +61,15 @@ export default function HomeComponent() {
         formData.append('image', binaryImage);
         const res = await request<OCRPostReturn>({ type: 'POST', route: '/api/ocr', body: formData });
         console.log(`development:`, res.status, res.message, res.text_data);
-
+        
         // Draw Image
-        drawImageData(base64Image, res.text_data ?? []);
+        if (res.status === 'success' && res.text_data) drawImageData(base64Image, res.text_data);
       } catch (e: any) {
-        drawImageData(base64Image, []);
         alert('Upload failed');
       }
     };
     reader.readAsDataURL(binaryImage);
-  };
+  }
 
   return (
     <div className="flex flex-col items-center gap-6 p-4">
