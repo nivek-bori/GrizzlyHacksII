@@ -1,4 +1,4 @@
-import { ocr_config } from "@/lib/config";
+import { config } from "@/lib/config";
 import { NextResponse } from "next/server";
 import path from "path";
 import { createWorker } from 'tesseract.js';
@@ -42,10 +42,13 @@ export async function POST(request: Request) {
     worker = await createWorker('eng', 1, {
       workerPath: path.resolve(process.cwd(), 'node_modules/tesseract.js/src/worker-script/node/index.js'),
       corePath: path.resolve(process.cwd(), 'node_modules/tesseract.js-core/tesseract-core.wasm.js'),
-      langPath: path.resolve(process.cwd(), 'node_modules/@tesseract.js-data/eng/4.0.0_best_int'),
+      langPath: path.resolve(process.cwd(), `node_modules/@tesseract.js-data/eng/${config.ocr.tesseract_version}`),
       workerBlobURL: false,
     });
-    const { data } = await worker.recognize(imageBuffer, {}, { blocks: true }); // You can also use: tsv: true (alternative flat format)
+    const startTime = Date.now();
+    const { data } = await worker.recognize(imageBuffer, {}, { blocks: true });
+    const endTime = Date.now();
+    console.log(`OCR timing: ${endTime - startTime}ms`);
     
     // Formatting & Processing
     const text_data: OCRPostReturn['text_data'] = [];
@@ -57,7 +60,7 @@ export async function POST(request: Request) {
               if (word.text?.trim()) {
                 const { bbox, confidence, text } = word;
 
-                if (confidence < ocr_config.confidence_threshold) continue;
+                if (Number(confidence) < Number(config.ocr.confidence_threshold)) continue;
 
                 text_data.push({
                   text: text.trim(),
