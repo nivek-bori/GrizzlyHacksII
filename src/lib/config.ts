@@ -8,6 +8,6 @@ export const config = {
   },
   ocr: {
     confidence_threshold: process.env.NEXT_PUBLIC_TESSERACT_CONFIDENCE_THRESHOLD || 0.3,
-    tesseract_version: process.env.NEXT_PUBLIC_TESSERACT_VERSION || '4.0.0',
+    tesseract_version: process.env.NEXT_PUBLIC_TESSERACT_VERSION || '4.0.0_best_int',
   }
 };

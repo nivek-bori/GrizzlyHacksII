@@ -2,7 +2,7 @@
 
 import { request } from '@/lib/api';
 import { useRef } from 'react';
-import { OCRPostReturn } from '../api/ocr/route';
+import { OCRPostReturn } from '../api/tesseract/route';
 
 export default function DeveloperPage() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -59,7 +59,7 @@ export default function DeveloperPage() {
         // OCR
         const formData = new FormData();
         formData.append('image', binaryImage);
-        const res = await request<OCRPostReturn>({ type: 'POST', route: '/api/ocr', body: formData });
+        const res = await request<OCRPostReturn>({ type: 'POST', route: '/api/tesseract', body: formData });
         console.log(`development:`, res.status, res.message, res.text_data);
         
         // Draw Image

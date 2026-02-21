@@ -1,6 +1,6 @@
-import { DefaultAPIRet, verifyBody } from "@/lib/api";
-import { ocr_config } from "@/lib/config";
+import { config } from "@/lib/config";
 import { NextResponse } from "next/server";
+import path from "path";
 import { createWorker } from 'tesseract.js';
 
 export type OCRPostRequest = {
@@ -39,8 +39,24 @@ export async function POST(request: Request) {
     const imageBuffer = Buffer.from(arrayBuffer);
     
     // OCR
-    worker = await createWorker('eng', 1, {});
-    const { data } = await worker.recognize(imageBuffer, {}, { blocks: true }); // You can also use: tsv: true (alternative flat format)
+
+    const workerPath = path.join(process.cwd(), "src", "workers", "tesseract-node-worker.cjs");
+    const corePath = path.join(process.cwd(), "node_modules", "tesseract.js-core", "tesseract-core.wasm.js");
+
+    console.log(`workerPath: ${workerPath}`); 
+    console.log(`corePath: ${corePath}`); 
+
+    worker = await createWorker("eng", 1, {
+      workerPath,
+      corePath,
+      langPath: "https://tessdata.projectnaptha.com/4.0.0",
+      cachePath: "/tmp",
+    });
+    
+    const startTime = Date.now();
+    const { data } = await worker.recognize(imageBuffer, {}, { blocks: true });
+    const endTime = Date.now();
+    console.log(`OCR timing: ${endTime - startTime}ms`);
     
     // Formatting & Processing
     const text_data: OCRPostReturn['text_data'] = [];
@@ -52,7 +68,7 @@ export async function POST(request: Request) {
               if (word.text?.trim()) {
                 const { bbox, confidence, text } = word;
 
-                if (confidence < ocr_config.confidence_threshold) continue;
+                if (Number(confidence) < Number(config.ocr.confidence_threshold)) continue;
 
                 text_data.push({
                   text: text.trim(),
@@ -88,6 +104,6 @@ export async function POST(request: Request) {
     console.log(e.message.slice(0, 400));
     console.log('Error End--------------------------------');
     
-    return NextResponse.json<OCRPostReturn>({status: 'error', message: 'There was an issue detecting text in the image'}, {status: 500});
+    return NextResponse.json<OCRPostReturn>({status: 'error', message: `There was an issue detecting text in the image: ${e.message}`}, {status: 500});
   }
 }
