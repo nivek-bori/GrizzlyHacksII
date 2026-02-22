@@ -43,3 +43,5 @@ next-env.d.ts
 # tesseract
 eng.traineddata
 .env*.local
+
+GrizzlyHacks II Vision API Service.json

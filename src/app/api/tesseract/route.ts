@@ -1,4 +1,5 @@
 import { config } from "@/lib/config";
+import { DefaultAPIReturn, TesseractTextDetection } from "@/types/types";
 import { NextResponse } from "next/server";
 import path from "path";
 import { createWorker } from 'tesseract.js';
@@ -7,18 +8,8 @@ export type OCRPostRequest = {
   image_binary: Blob;
 }
 
-export type OCRPostReturn = {
-  status: 'success' | 'error';
-  message: string;
-  text_data?: Array<{
-    text: string;
-    bounding_box: {
-      x0: number;
-      y0: number;
-      x1: number;
-      y1: number;
-    };
-  }>;
+export type OCRPostReturn = DefaultAPIReturn & {
+  text_data?: Array<TesseractTextDetection>;
 }
 
 type PostFullRequest = {
