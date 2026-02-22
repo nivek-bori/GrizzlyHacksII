@@ -24,7 +24,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className='w-full h-full'>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased w-full h-full`}>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased w-full h-full`} style={{ fontFamily: '"OpenDyslexic", var(--font-geist-sans), var(--font-geist-mono), Arial, sans-serif' }}>
         {children}
       </body>
     </html>
