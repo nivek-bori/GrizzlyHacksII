@@ -42,6 +42,7 @@ export async function POST(request: Request) {
   try {
     const form = await request.formData();
     const imageBinary = form.get("image");
+    const seperateLevel = form.get("seperate_level") as 'word' | 'line' | undefined;
     if (!imageBinary || !(imageBinary instanceof Blob)) return NextResponse.json<CloudVisionPostReturn>({ status: "error", message: "Image binary is not a blob" }, { status: 400 });
 
     const arrayBuffer = await imageBinary.arrayBuffer();
@@ -60,25 +61,44 @@ export async function POST(request: Request) {
 
       for (const block of page.blocks ?? []) {
         for (const para of block.paragraphs ?? []) {
-          for (const word of para.words ?? []) {
-            const text = (word.symbols ?? []).map((s) => s.text ?? "").join("");
-            if (!text || /^[\s\p{P}\p{S}]+$/u.test(text.trim())) continue;
-
-            if (!word.boundingBox?.vertices?.length) continue;
-
+          if (seperateLevel === 'line') {
+            const text = (para.words ?? []).map((word) => (word.symbols ?? []).map((s) => s.text ?? "").join("")).join(" ").trim();
+            if (!text || /^[\s\p{P}\p{S}]+$/u.test(text)) continue;
+            if (!para.boundingBox?.vertices?.length) continue;
             text_data.push({
               text,
               bounding_box: {
-                x0: Math.min(imgW, Math.max(0, word.boundingBox?.vertices?.[0]?.x ?? 0)),
-                y0: Math.min(imgH, Math.max(0, word.boundingBox?.vertices?.[0]?.y ?? 0)),
-                x1: Math.min(imgW, Math.max(0, word.boundingBox?.vertices?.[1]?.x ?? 0)),
-                y1: Math.min(imgH, Math.max(0, word.boundingBox?.vertices?.[1]?.y ?? 0)),
-                x2: Math.min(imgW, Math.max(0, word.boundingBox?.vertices?.[2]?.x ?? 0)),
-                y2: Math.min(imgH, Math.max(0, word.boundingBox?.vertices?.[2]?.y ?? 0)),
-                x3: Math.min(imgW, Math.max(0, word.boundingBox?.vertices?.[3]?.x ?? 0)),
-                y3: Math.min(imgH, Math.max(0, word.boundingBox?.vertices?.[3]?.y ?? 0)),
+                x0: Math.min(imgW, Math.max(0, para.boundingBox.vertices[0].x ?? 0)),
+                y0: Math.min(imgH, Math.max(0, para.boundingBox.vertices[0].y ?? 0)),
+                x1: Math.min(imgW, Math.max(0, para.boundingBox.vertices[1].x ?? 0)),
+                y1: Math.min(imgH, Math.max(0, para.boundingBox.vertices[1].y ?? 0)),
+                x2: Math.min(imgW, Math.max(0, para.boundingBox.vertices[2].x ?? 0)),
+                y2: Math.min(imgH, Math.max(0, para.boundingBox.vertices[2].y ?? 0)),
+                x3: Math.min(imgW, Math.max(0, para.boundingBox.vertices[3].x ?? 0)),
+                y3: Math.min(imgH, Math.max(0, para.boundingBox.vertices[3].y ?? 0)),
               },
             });
+          } else {
+            for (const word of para.words ?? []) {
+              const text = (word.symbols ?? []).map((s) => s.text ?? "").join("");
+              if (!text || /^[\s\p{P}\p{S}]+$/u.test(text.trim())) continue;
+
+              if (!word.boundingBox?.vertices?.length) continue;
+
+              text_data.push({
+                text,
+                bounding_box: {
+                  x0: Math.min(imgW, Math.max(0, word.boundingBox?.vertices?.[0]?.x ?? 0)),
+                  y0: Math.min(imgH, Math.max(0, word.boundingBox?.vertices?.[0]?.y ?? 0)),
+                  x1: Math.min(imgW, Math.max(0, word.boundingBox?.vertices?.[1]?.x ?? 0)),
+                  y1: Math.min(imgH, Math.max(0, word.boundingBox?.vertices?.[1]?.y ?? 0)),
+                  x2: Math.min(imgW, Math.max(0, word.boundingBox?.vertices?.[2]?.x ?? 0)),
+                  y2: Math.min(imgH, Math.max(0, word.boundingBox?.vertices?.[2]?.y ?? 0)),
+                  x3: Math.min(imgW, Math.max(0, word.boundingBox?.vertices?.[3]?.x ?? 0)),
+                  y3: Math.min(imgH, Math.max(0, word.boundingBox?.vertices?.[3]?.y ?? 0)),
+                },
+              });
+            }
           }
         }
       }
