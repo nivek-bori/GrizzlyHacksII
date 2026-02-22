@@ -12,6 +12,7 @@ export type CloudVisionPostRequest = {
 
 export type CloudVisionPostReturn = DefaultAPIReturn & {
   text_data?: Array<CloudVisionTextDetection>;
+  full_text?: string
 };
 
 function getVisionClient() {
@@ -128,7 +129,7 @@ export async function POST(request: Request) {
       }
     }
 
-    return NextResponse.json<CloudVisionPostReturn>({status: "success", message: "", text_data });
+    return NextResponse.json<CloudVisionPostReturn>({status: "success", message: "", text_data, full_text: annotation?.text ?? result.textAnnotations?.[0]?.description ?? "" });
   } catch (e: any) {
     console.log("api/cloud_vision post error", e?.message ?? e);
     return NextResponse.json<CloudVisionPostReturn>({ status: "error", message: "There was an issue detecting text in the image" }, { status: 500 });

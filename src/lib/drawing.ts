@@ -1,6 +1,6 @@
 import { CloudVisionPostReturn } from "@/app/api/cloud_vision/route";
 import { OCRPostReturn } from "@/app/api/tesseract/route";
-import { CloudVisionTextDetection } from "@/types/types";
+import { CloudVisionTextDetection, TesseractTextDetection } from "@/types/types";
 
 export const calculateFontSize = async (ctx: CanvasRenderingContext2D, text: string, maxY: number, maxX: number) => {
   let fontSize = 12;
@@ -21,7 +21,7 @@ export const calculateFontSize = async (ctx: CanvasRenderingContext2D, text: str
   if (finalFontX > maxX) console.log(`error num 1`, finalFontX, maxX);
   if (finalFontY > maxY) console.log(`error num 2`, finalFontY, maxY);
 
-  console.log(`testing 1`, text, maxX / fontX, maxY / fontY, `--`, maxX, fontX, maxY, fontY, `--`, maxX - ratio * fontX, maxY - ratio * fontY, ratio === maxX / fontX, '--', maxX - finalFontX, maxY - finalFontY, finalFontY, finalFontY);
+  // console.log(`testing 1`, text, maxX / fontX, maxY / fontY, `--`, maxX, fontX, maxY, fontY, `--`, maxX - ratio * fontX, maxY - ratio * fontY, ratio === maxX / fontX, '--', maxX - finalFontX, maxY - finalFontY, finalFontY, finalFontY);
 
   return {
     fontSize,
@@ -29,6 +29,23 @@ export const calculateFontSize = async (ctx: CanvasRenderingContext2D, text: str
     excessY: maxY - finalFontY,
   };
 }
+
+type BoundingBox = CloudVisionTextDetection['bounding_box'];
+
+export const strokeBoundingBox = (ctx: CanvasRenderingContext2D, box: BoundingBox, style: { strokeStyle?: string; lineWidth?: number } = {}) => {
+  const { strokeStyle = 'red', lineWidth = 1 } = style;
+  const { x0, y0, x1, y1, x2, y2, x3, y3 } = box;
+  ctx.beginPath();
+  ctx.strokeStyle = strokeStyle;
+  ctx.lineWidth = lineWidth;
+  ctx.moveTo(x0, y0);
+  ctx.lineTo(x1, y1);
+  ctx.lineTo(x2, y2);
+  ctx.lineTo(x3, y3);
+  ctx.lineTo(x0, y0);
+  ctx.closePath();
+  ctx.stroke();
+};
 
 export const fillCloudVisionRectangle = (ctx: CanvasRenderingContext2D, text: CloudVisionTextDetection) => {
   ctx.fillStyle = 'white';
@@ -44,17 +61,7 @@ export const fillCloudVisionRectangle = (ctx: CanvasRenderingContext2D, text: Cl
   ctx.restore();
 
   // TODO: REMOVE TESTING
-  const { x0, y0, x1, y1, x2, y2, x3, y3 } = text.bounding_box;
-  ctx.beginPath();
-  ctx.strokeStyle = 'red';
-  ctx.lineWidth = 1;
-  ctx.moveTo(x0, y0);
-  ctx.lineTo(x1, y1);
-  ctx.lineTo(x2, y2);
-  ctx.lineTo(x3, y3);
-  ctx.lineTo(x0, y0);
-  ctx.closePath();
-  ctx.stroke();
+  strokeBoundingBox(ctx, text.bounding_box);
   // TODO: REMOVE TESTING
 }
 
@@ -111,42 +118,56 @@ export const drawCloudVisionText = async (ctx: CanvasRenderingContext2D, text: C
   ctx.restore(); 
 }
 
-export const drawImageData = (canvas: HTMLCanvasElement | null, imageData: string, textData: NonNullable<OCRPostReturn['text_data']> | NonNullable<CloudVisionPostReturn['text_data']>) => {
-  if (!canvas) return;
+const drawTesseractImageData = async (ctx: CanvasRenderingContext2D, text: TesseractTextDetection) => {
+  ctx.fillStyle = 'white';
+  ctx.fillRect(
+    text.bounding_box.x0,
+    text.bounding_box.y0,
+    text.bounding_box.x1 - text.bounding_box.x0,
+    text.bounding_box.y1 - text.bounding_box.y0
+  );
+
+  const { fontSize } = await calculateFontSize(ctx, text.text, text.bounding_box.x1 - text.bounding_box.x0, text.bounding_box.y1 - text.bounding_box.y0);
+  ctx.font = `${fontSize}px "OpenDyslexic", Arial, sans-serif`;
+  ctx.fillStyle = 'black';
+  ctx.fillText(
+    text.text,
+    text.bounding_box.x0 + (text.bounding_box.x1 - text.bounding_box.x0) / 2 - ctx.measureText(text.text).width / 2,
+    text.bounding_box.y0 + (text.bounding_box.y1 - text.bounding_box.y0) / 2 - fontSize / 2
+  );
+}
+
+export const drawImageData = (canvas: HTMLCanvasElement | null, canvasData: {aspect: number, width: number, height: number}, imageData: string, textData: NonNullable<OCRPostReturn['text_data']> | NonNullable<CloudVisionPostReturn['text_data']> | null) => {
+  if (!canvas) {
+    console.error('Canvas is not found');
+    return;
+  }
 
   const img = new Image();
-  img.onload = async () => {
+  img.onload = () => {
     canvas.width = img.width;
     canvas.height = img.height;
     const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-    
-    ctx.drawImage(img, 0, 0);
+    if (!ctx) {
+      console.error('Context is not found');
+      return;
+    };
+
+    ctx.drawImage(img, 0, 0, canvasData.width, canvasData.height);
     ctx.save();
 
-    for (const text of textData) {
+    const scaleX = canvasData.width / img.naturalWidth;
+    const scaleY = canvasData.height / img.naturalHeight;
+    ctx.scale(scaleX, scaleY);
+
+    for (const text of textData ?? []) {
       if ('x2' in text.bounding_box && 'y2' in text.bounding_box && 'x3' in text.bounding_box && 'y3' in text.bounding_box) {
         // Cloud Vision
         fillCloudVisionRectangle(ctx, text as CloudVisionTextDetection);
         drawCloudVisionText(ctx, text as CloudVisionTextDetection);
       } else {
         // Tesseract
-        ctx.fillStyle = 'white';
-        ctx.fillRect(
-          text.bounding_box.x0,
-          text.bounding_box.y0,
-          text.bounding_box.x1 - text.bounding_box.x0,
-          text.bounding_box.y1 - text.bounding_box.y0
-        );
-
-        const { fontSize } = await calculateFontSize(ctx, text.text, text.bounding_box.x1 - text.bounding_box.x0, text.bounding_box.y1 - text.bounding_box.y0);
-        ctx.font = `${fontSize}px "OpenDyslexic", Arial, sans-serif`;
-        ctx.fillStyle = 'black';
-        ctx.fillText(
-          text.text,
-          text.bounding_box.x0 + (text.bounding_box.x1 - text.bounding_box.x0) / 2 - ctx.measureText(text.text).width / 2,
-          text.bounding_box.y0 + (text.bounding_box.y1 - text.bounding_box.y0) / 2 - fontSize / 2
-        );
+        drawTesseractImageData(ctx, text as TesseractTextDetection);
       }
     }
   };

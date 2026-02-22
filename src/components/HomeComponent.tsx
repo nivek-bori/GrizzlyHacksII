@@ -1,87 +1,102 @@
 'use client';
 
 import { CloudVisionPostReturn } from '@/app/api/cloud_vision/route';
+import { OCRPostReturn } from '@/app/api/tesseract/route';
 import { request } from '@/lib/api';
 import { drawImageData } from '@/lib/drawing';
 import { CloudVisionTextDetection } from '@/types/types';
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
+import InputComponent from './input/InputComponent';
+import OutputComponent from './OutputComponent';
 
-type OCRPostReturn = {
-  status: 'success' | 'error';
-  message: string;
-  text_data?: Array<{
-    text: string;
-    bounding_box: {
-      x0: number;
-      y0: number;
-      x1: number;
-      y1: number;
-    };
-  }>;
-};
+export type ImageStatus = 'none' | 'loading' | 'new' | 'processing' | 'success' | 'error';
 
 export default function HomeComponent() {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  // Input File Component
+  const [imageData, setImageData] = useState<{ file: File, base64: string, canvasData: { aspect: number, width: number, height: number }} | null>(null);
+  const [options, setOptions] = useState<{ seperateLevel: 'word' | 'line'; }>({ seperateLevel: 'line' });
 
-  const handleUpload = async (e: React.FormEvent<HTMLFormElement>) => {
+  // Output Component
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [fullText, setFullText] = useState<NonNullable<CloudVisionPostReturn['full_text']> | null>(null);
+
+  // Website Description & Input & Output Component
+  const [imageStatus, setImageStatus] = useState<ImageStatus>('none');
+
+  // save file, base64, draw basic image
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
 
-    // Loading file
-    const form = e.target as HTMLFormElement;
-    const fileInput = form.elements.namedItem('image') as HTMLInputElement;
-    if (!fileInput.files || fileInput.files.length === 0) {
-      alert('Please select an image.');  // TODO: NOTIFICATION
+    const imageFiles = e.target as HTMLInputElement;
+    if (!imageFiles.files || imageFiles.files.length === 0) {
+      alert('No file uploaded.');
       return;
     }
 
-    // Processing file
-    const binaryImage = fileInput.files[0];
+    setImageStatus('loading');
+
+    const imageFile = imageFiles.files[0];
     const reader = new FileReader();
     reader.onloadend = async () => {
       const base64Image = reader.result as string;
-      try {
-        // OCR
-        const formData = new FormData();
-        formData.append('image', binaryImage);
-        formData.append('seperate_level', 'line'); // TODO: USER INPUT
-        const res = await request<OCRPostReturn>({ type: 'POST', route: '/api/cloud_vision', body: formData });
-        console.log(`development:`, res.status, res.message, res.text_data);
 
-        // Draw Image
-        drawImageData(canvasRef.current, base64Image, res.text_data ?? []);
-      } catch (e: any) {
-        drawImageData(canvasRef.current, base64Image, []);
-        alert('Upload failed');
+      const img = new Image();
+      img.onload = () => {
+        const canvasData = { aspect: img.naturalWidth / img.naturalHeight, width: img.naturalWidth, height: img.naturalHeight };
+        setImageData({ file: imageFile, base64: base64Image, canvasData });
+        drawImageData(canvasRef.current, canvasData, base64Image, null);
+        setFullText(null);
+        setImageStatus('new');
       }
+      img.onerror = () => {
+        setImageStatus('error');
+      }
+      img.src = base64Image;
     };
-    reader.readAsDataURL(binaryImage);
+    reader.readAsDataURL(imageFile);
+
+    e.target.value = "";
+  }
+
+  // process image, save ocr results
+  const handleSubmit = async () => {
+    if (!imageData) {
+      alert('Please select an image before submitting.');
+      return;
+    }
+
+    setImageStatus('processing');
+
+    const formData = new FormData();
+    formData.append('image', imageData.file);
+    formData.append('seperate_level', options.seperateLevel);
+    const res = await request<CloudVisionPostReturn>({ type: 'POST', route: '/api/cloud_vision', body: formData });
+    console.log(`development:`, res.status, res.message, res.text_data); // TODO: REMOVE
+
+    if (res.status === 'success' && canvasRef.current) {
+      drawImageData(canvasRef.current, imageData.canvasData, imageData.base64, res.text_data ?? null);
+      setFullText(res.full_text ?? null);
+    }
+    
+    setImageStatus(res.status);
   };
 
   return (
-    <div className="flex flex-col items-center gap-6 p-4">
-      <form
-        className="flex flex-col items-center gap-4"
-        onSubmit={handleUpload}
-      >
-        <input
-          type="file"
-          name="image"
-          accept="image/*"
-          className="border p-2 rounded"
-          required
-        />
-        <button
-          type="submit"
-          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-        >
-          Upload Image
-        </button>
-      </form>
-      <canvas
-        ref={canvasRef}
-        className="border border-gray-300 rounded shadow-sm max-w-full"
-        style={{ maxHeight: '70vh' }}
-      />
+    <div className="w-full h-full flex">
+      <div className="flex flex-1 h-full">
+        <div className="flex-1 h-full flex">
+          <InputComponent 
+            handleUpload={handleUpload}
+            handleSubmit={handleSubmit}
+            options={options}
+            setOptions={setOptions}
+            className="w-full h-full"
+          />
+        </div>
+        <div className="flex-[1.5] h-full bg-gray-200">
+          <OutputComponent imageStatus={imageStatus} canvasRef={canvasRef} imageData={imageData} fullText={fullText} className="w-full h-full"></OutputComponent>
+        </div>
+      </div>
     </div>
   );
 }
