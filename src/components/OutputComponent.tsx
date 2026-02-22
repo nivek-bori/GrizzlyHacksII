@@ -22,14 +22,14 @@ interface OutputComponentProps {
   imageStatus: ImageStatus;
   imageData: { file: File, base64: string, canvasData: { aspect: number, width: number, height: number } } | null;
   fullText: NonNullable<CloudVisionPostReturn['full_text']> | null;
+  navBarSelection: NavBarSelection;
+  setNavBarSelection: (selection: NavBarSelection) => void;
   className?: string;
 }
 
 export type NavBarSelection = 'home' | 'image';
 
-export default function OutputComponent({ canvasRef, imageStatus, imageData, fullText, className }: OutputComponentProps) {
-  const [navBarSelection, setNavBarSelection] = useState<NavBarSelection>('home');
-
+export default function OutputComponent({ canvasRef, imageStatus, imageData, fullText, navBarSelection, setNavBarSelection, className }: OutputComponentProps) {
   const handleSetNavBarSelection = (selection: NavBarSelection) => {
     if (selection !== 'home' && imageStatus === 'none') {
       alert('Upload an image to get started');
@@ -40,8 +40,8 @@ export default function OutputComponent({ canvasRef, imageStatus, imageData, ful
   }
   
   return (
-    <div className={`flex flex-col items-center justify-center py-[4rem] ${className}`}>
-      <div className='px-[4rem] w-full flex-1'>
+    <div className={`flex flex-col items-center justify-center ${className}`} style={{ overflowY: 'auto', height: '100%' }}>
+      <div className='px-[4rem] py-[5rem] w-full flex-1'>
         <NavBarComponent navBarSelection={navBarSelection} setNavBarSelection={handleSetNavBarSelection} className='mb-[3rem]' />
 
         <div className="relative w-full h-full">

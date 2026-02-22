@@ -7,7 +7,7 @@ import { drawImageData } from '@/lib/drawing';
 import { CloudVisionTextDetection } from '@/types/types';
 import { useRef, useState } from 'react';
 import InputComponent from './input/InputComponent';
-import OutputComponent from './OutputComponent';
+import OutputComponent, { NavBarSelection } from './OutputComponent';
 
 export type ImageStatus = 'none' | 'loading' | 'new' | 'processing' | 'success' | 'error';
 
@@ -19,6 +19,7 @@ export default function HomeComponent() {
   // Output Component
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [fullText, setFullText] = useState<NonNullable<CloudVisionPostReturn['full_text']> | null>(null);
+  const [navBarSelection, setNavBarSelection] = useState<NavBarSelection>('home');
 
   // Website Description & Input & Output Component
   const [imageStatus, setImageStatus] = useState<ImageStatus>('none');
@@ -47,6 +48,7 @@ export default function HomeComponent() {
         drawImageData(canvasRef.current, canvasData, base64Image, null);
         setFullText(null);
         setImageStatus('new');
+        setNavBarSelection('image');
       }
       img.onerror = () => {
         setImageStatus('error');
@@ -94,7 +96,7 @@ export default function HomeComponent() {
           />
         </div>
         <div className="flex-[1.5] h-full bg-gray-200">
-          <OutputComponent imageStatus={imageStatus} canvasRef={canvasRef} imageData={imageData} fullText={fullText} className="w-full h-full"></OutputComponent>
+          <OutputComponent imageStatus={imageStatus} canvasRef={canvasRef} imageData={imageData} fullText={fullText} navBarSelection={navBarSelection} setNavBarSelection={setNavBarSelection} className="w-full min-h-full"></OutputComponent>
         </div>
       </div>
     </div>

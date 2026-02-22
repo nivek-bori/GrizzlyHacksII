@@ -23,11 +23,13 @@ export default function InputComponent({ handleUpload, handleSubmit, options, se
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <div className={`flex flex-col items-center justify-center py-[3.5rem] px-[4rem] ${className}`}>
-      <header className='font-bold text-[2.5rem] w-full mb-[0.3rem]'>Unjumblr</header>
-      <p className='text-[0.85rem] w-full' style={{ lineHeight: '1' }}>Project by KDAA <span className='text-[0.9rem]'>🛞</span></p>
-      <p className='mb-[1.6rem] text-[0.85rem] w-full'>Made for Grizzly Hacks II</p>
-      <div className='w-full h-full flex flex-col max-w-[600px] max-h-[1000px] gap-[1.2rem]'>
+    <div className={`flex flex-col items-center justify-center py-[4rem] pb-[5rem] px-[5rem] ${className}`}>
+      <div className='w-full h-full flex flex-col max-w-[600px] gap-[1.2rem]'>
+        <header>
+          <h1 className='font-bold text-[2.5rem] w-full mb-[0.3rem]'>Unjumblr</h1>
+          <p className='text-[0.85rem] w-full' style={{ lineHeight: '1' }}>Project by KDAA <span className='text-[0.9rem]'>🛞</span></p>
+          <p className='mb-[1.6rem] text-[0.85rem] w-full'>Made for Grizzly Hacks II</p>
+        </header>
         <input
           id="image-upload"
           type="file"

@@ -16,7 +16,7 @@ function NavBarButton({ displayName, onClick, isActive, className }: { displayNa
 
 export default function NavBarComponent({ navBarSelection, setNavBarSelection, className }: { navBarSelection: NavBarSelection, setNavBarSelection: (selection: NavBarSelection) => void, className?: string }) {
   return (
-    <nav className={`w-full flex flex-row items-center justify-between px-[4rem] font-semibold ${className}`}>
+    <nav className={`w-full flex flex-row items-center justify-evenly font-semibold ${className}`}>
       <NavBarButton displayName='Home' onClick={() => setNavBarSelection('home')} isActive={navBarSelection === 'home'} className={'text-purple-600'} />
       <NavBarButton displayName='Image' onClick={() => setNavBarSelection('image')} isActive={navBarSelection === 'image'} className={'text-green-600'} />
     </nav>
