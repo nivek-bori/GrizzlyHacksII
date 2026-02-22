@@ -62,7 +62,7 @@ export async function POST(request: Request) {
         for (const para of block.paragraphs ?? []) {
           for (const word of para.words ?? []) {
             const text = (word.symbols ?? []).map((s) => s.text ?? "").join("");
-            if (!text) continue;
+            if (!text || /^[\s\p{P}\p{S}]+$/u.test(text.trim())) continue;
 
             if (!word.boundingBox?.vertices?.length) continue;
 

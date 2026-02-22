@@ -11,6 +11,7 @@ export default function DeveloperPage() {
   const drawImageData = (imageData: string, textData: NonNullable<OCRPostReturn['text_data']> | NonNullable<CloudVisionPostReturn['text_data']>) => {
     if (!imageData || !canvasRef.current) return;
     const canvas = canvasRef.current;
+    if (!canvas) return;
     
     const img = new Image();
     img.onload = () => {
@@ -20,10 +21,10 @@ export default function DeveloperPage() {
       if (!ctx) return;
 
       ctx.drawImage(img, 0, 0);
-      
       ctx.save();
+      
       ctx.strokeStyle = 'red';
-      ctx.lineWidth = Math.max(2, img.width * 0.005);
+      ctx.lineWidth = 1;
       
       ctx.beginPath();
       for (const text of textData) {
@@ -34,6 +35,7 @@ export default function DeveloperPage() {
           ctx.lineTo(x1, y1);
           ctx.lineTo(x2, y2);
           ctx.lineTo(x3, y3);
+          ctx.lineTo(x0, y0);
         }
         // Tesseract
         else {
@@ -46,7 +48,7 @@ export default function DeveloperPage() {
         }
       }
       ctx.closePath();
-      
+
       ctx.stroke();
       ctx.restore();
     };
