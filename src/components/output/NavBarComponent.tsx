@@ -5,6 +5,8 @@ function NavBarButton({ displayName, onClick, isActive, className }: { displayNa
     <button
       onClick={onClick}
       className={`${className} flex`}
+      aria-label={`${displayName} tab`}
+      aria-current={isActive ? 'page' : undefined}
     >
       <span className="inline-flex flex-col items-center">
         <p className='text-[1.6rem] font-semibold px-[3px] pb-[3px]' style={{ lineHeight: '1'}}>{displayName}</p>
@@ -16,7 +18,7 @@ function NavBarButton({ displayName, onClick, isActive, className }: { displayNa
 
 export default function NavBarComponent({ navBarSelection, setNavBarSelection, className }: { navBarSelection: NavBarSelection, setNavBarSelection: (selection: NavBarSelection) => void, className?: string }) {
   return (
-    <nav className={`w-full flex flex-row items-center justify-evenly font-semibold ${className}`}>
+    <nav className={`w-full flex flex-row items-center justify-evenly font-semibold ${className}`} aria-label="Main navigation">
       <NavBarButton displayName='Home' onClick={() => setNavBarSelection('home')} isActive={navBarSelection === 'home'} className={'text-purple-600'} />
       <NavBarButton displayName='Image' onClick={() => setNavBarSelection('image')} isActive={navBarSelection === 'image'} className={'text-green-600'} />
     </nav>

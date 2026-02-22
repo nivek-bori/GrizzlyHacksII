@@ -38,15 +38,16 @@ export default function InputComponent({ handleUpload, handleSubmit, options, se
           className="hidden"
           required
           onChange={handleUpload}
+          aria-label="Upload an image"
         />
-        <label htmlFor="image-upload" className='flex flex-col gap-[0.9rem] items-center justify-center flex-7 bg-blue-100 border-blue-300 hover:border-blue-400 transition-all border-[2px] rounded-[2rem]'>
+        <label htmlFor="image-upload" className='flex flex-col gap-[0.9rem] items-center justify-center flex-7 bg-blue-100 border-blue-300 hover:border-blue-400 transition-all border-[2px] rounded-[2rem]' aria-label="Upload an image">
           <FaCamera className='text-[4rem]' />
           <div className='text-[1.6rem] font-semibold'>upload an image</div>
         </label>
 
         <MoreOptionsComponent options={options} setOptions={setOptions} isOpen={isOpen} setIsOpen={setIsOpen} className=''></MoreOptionsComponent>
         
-        <button onClick={handleSubmit} className='flex items-center justify-center p-[1.5rem] bg-green-400 hover:bg-green-500 border-green-500 hover:border-green-600 transition-all border-[2px] rounded-[2rem]'>
+        <button onClick={handleSubmit} className='flex items-center justify-center p-[1.5rem] bg-green-400 hover:bg-green-500 border-green-500 hover:border-green-600 transition-all border-[2px] rounded-[2rem]' aria-label="Submit image for processing">
           <p className='text-[1.6rem] font-bold'>Submit</p>
         </button>
       </div>

@@ -10,6 +10,7 @@ export default function ImageComponent({ imageStatus, canvasRef, aspect, classNa
           ref={canvasRef}
           className="relative w-full border border-gray-300 rounded shadow-sm"
           style={aspect ? { aspectRatio: `${aspect}` } : undefined}
+          aria-label="Uploaded image with extracted text in OpenDyslexic font"
         />
 
         {imageStatus === 'none' && (

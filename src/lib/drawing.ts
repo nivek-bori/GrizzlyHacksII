@@ -61,7 +61,7 @@ export const fillCloudVisionRectangle = (ctx: CanvasRenderingContext2D, text: Cl
   ctx.restore();
 
   // TODO: REMOVE TESTING
-  strokeBoundingBox(ctx, text.bounding_box);
+  // strokeBoundingBox(ctx, text.bounding_box);
   // TODO: REMOVE TESTING
 }
 

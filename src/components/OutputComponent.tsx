@@ -40,16 +40,16 @@ export default function OutputComponent({ canvasRef, imageStatus, imageData, ful
   }
   
   return (
-    <div className={`flex flex-col items-center justify-center ${className}`} style={{ overflowY: 'auto', height: '100%' }}>
+    <div className={`flex flex-col items-center justify-center ${className}`} style={{ overflowY: 'auto', height: '100%' }} role="complementary" aria-label="Output panel">
       <div className='px-[4rem] py-[5rem] w-full flex-1'>
         <NavBarComponent navBarSelection={navBarSelection} setNavBarSelection={handleSetNavBarSelection} className='mb-[3rem]' />
 
         <div className="relative w-full h-full">
           {/* Always render all components, hide/show via CSS for stacking/overlay */}
-          <div style={{ zIndex: navBarSelection === 'home' ? 2 : 1, position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: navBarSelection === 'home' ? "auto" : "none", opacity: navBarSelection === 'home' ? 1 : 0, transition: "opacity 0.15s" }}>
+          <div style={{ zIndex: navBarSelection === 'home' ? 2 : 1, position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: navBarSelection === 'home' ? "auto" : "none", opacity: navBarSelection === 'home' ? 1 : 0, transition: "opacity 0.15s" }} role="region" aria-label="Welcome and description">
             <DescriptionComponent />
           </div>
-          <div style={{ zIndex: navBarSelection === 'image' ? 2 : 1, position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: navBarSelection === 'image' ? "auto" : "none", opacity: navBarSelection === 'image' ? 1 : 0, transition: "opacity 0.15s" }}>
+          <div style={{ zIndex: navBarSelection === 'image' ? 2 : 1, position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: navBarSelection === 'image' ? "auto" : "none", opacity: navBarSelection === 'image' ? 1 : 0, transition: "opacity 0.15s" }} role="region" aria-label="Image and transcript">
             <ImageComponent imageStatus={imageStatus} canvasRef={canvasRef} aspect={imageData?.canvasData?.aspect ?? 1} className="mb-[4.1rem]" />
             <TextComponent fullText={fullText} />
           </div>

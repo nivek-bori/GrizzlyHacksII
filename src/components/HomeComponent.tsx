@@ -84,7 +84,7 @@ export default function HomeComponent() {
   };
 
   return (
-    <div className="w-full h-full flex">
+    <main className="w-full h-full flex" aria-label="Unjumblr app">
       <div className="flex flex-1 h-full">
         <div className="flex-1 h-full flex">
           <InputComponent 
@@ -99,6 +99,6 @@ export default function HomeComponent() {
           <OutputComponent imageStatus={imageStatus} canvasRef={canvasRef} imageData={imageData} fullText={fullText} navBarSelection={navBarSelection} setNavBarSelection={setNavBarSelection} className="w-full min-h-full"></OutputComponent>
         </div>
       </div>
-    </div>
+    </main>
   );
 }

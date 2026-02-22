@@ -38,7 +38,7 @@ export default function DeveloperDannyPage() {
         </div>
       </section>
       <section className="flex flex-col items-center justify-center mt-16 space-y-8">
-        <button className="mt-4 text-5xl bg-yellow-500 text-blue-800 border-gray-500 rounded-4xl p-12 shadow-lg hover:bg-yellow-600 focus:ring-2 cursor-pointer">Try Now!</button>
+        <button className="mt-4 text-5xl bg-yellow-500 text-blue-800 border-gray-500 rounded-4xl p-12 shadow-lg hover:bg-yellow-600 focus:ring-2 cursor-pointer" aria-label="Try UnJumblr now">Try Now!</button>
         <h1 className="text-2xl text-blue-800 mt-4 font-bold">More Examples</h1>
         <line className="w-4/5 h-0.5 bg-blue-800 mt-2 rounded-sm"></line>
         <img

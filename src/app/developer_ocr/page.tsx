@@ -100,10 +100,12 @@ export default function DeveloperPage() {
           accept="image/*"
           className="border p-2 rounded"
           required
+          aria-label="Choose image file"
         />
         <button
           type="submit"
           className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+          aria-label="Upload image for processing"
         >
           Upload Image
         </button>
@@ -112,6 +114,7 @@ export default function DeveloperPage() {
         ref={canvasRef}
         className="border border-gray-300 rounded shadow-sm max-w-full"
         style={{ maxHeight: '70vh' }}
+        aria-label="Processed image with text detection overlay"
       />
     </div>
   );
